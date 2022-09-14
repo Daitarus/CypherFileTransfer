@@ -14,6 +14,7 @@ namespace ProtocolCryptographyC
 		private byte[] length;
 		private byte[]? payload;
 		private byte[]? buffer;
+		public static int lengthBlockFile = 16777210;
 
 		public TypeSegment Type { get { return type; } }
 		public byte NumSegment { get { return numSegment; } }
@@ -78,7 +79,7 @@ namespace ProtocolCryptographyC
 			}
 			if (payload != null)
 			{
-				if (payload.Length > 16777216)
+				if (payload.Length > lengthBlockFile)
 				{
 					return null;
 				}
@@ -113,7 +114,10 @@ namespace ProtocolCryptographyC
 		public static Segment? ParseSegment(Socket socket)
         {
 			Segment segment = new Segment();
+			int lengthInt;
 			byte[] header = new byte[5];
+			int lengthRead = 0;
+			int lengthReadOld = 0;
 			try
 			{
 				socket.Receive(header);
@@ -128,7 +132,7 @@ namespace ProtocolCryptographyC
 				byte[] lengthBuffer = new byte[4];
 				segment.length.CopyTo(lengthBuffer, 0);
 				lengthBuffer[3] = (byte)0;
-				int lengthInt = BitConverter.ToInt32(lengthBuffer, 0);
+				lengthInt = BitConverter.ToInt32(lengthBuffer, 0);
 				if (lengthInt > 0)
 				{
 					segment.payload = new byte[lengthInt];
@@ -138,13 +142,19 @@ namespace ProtocolCryptographyC
 				{
 					if (segment.payload.Length > 0)
 					{
-						socket.Receive(segment.payload);
+						lengthRead = 0;
+						lengthReadOld = 0;
+						while (lengthRead < segment.payload.Length)
+						{
+							lengthRead += socket.Receive(segment.payload, lengthReadOld, segment.payload.Length - lengthReadOld, SocketFlags.None);
+							lengthReadOld = lengthRead;
+						}
 					}
 				}
 
 				return segment;
 			}
-			catch
+			catch(Exception ex)
             {
 				return null;
             }

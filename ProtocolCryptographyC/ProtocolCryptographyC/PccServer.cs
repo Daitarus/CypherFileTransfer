@@ -9,20 +9,26 @@ using System.Threading.Tasks;
 
 namespace ProtocolCryptographyC
 {
-    public class PccServer
+    public sealed class PccServer
     {
         private IPEndPoint serverEndPoint;
         private Socket listenSocket;
         RSACryptoServiceProvider rsa;
+        private byte[] hashServer;
+
 
         public PccServer(IPEndPoint serverEndPoint, RSACryptoServiceProvider rsa)
         {
             this.serverEndPoint = serverEndPoint;
             this.rsa = rsa;
         }
-        public bool Start()
+        public bool Start(string login, string password)
         {
-			try
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                hashServer = sha1.ComputeHash(Encoding.UTF8.GetBytes(login + password));
+            }
+            try
 			{
 				while (true)
 				{
@@ -43,9 +49,10 @@ namespace ProtocolCryptographyC
         {
             Console.WriteLine("New connection...");
             Segment segment = new Segment();
-            byte[] hash;
+            byte[] hash = new byte[20];
             byte[] data = new byte[256];
-            Aes aes;
+            Aes aes = Aes.Create();
+            FileWork fileWork = new FileWork(socket);
 
             try
             {
@@ -57,7 +64,7 @@ namespace ProtocolCryptographyC
                 }
                 else
                 {
-                    if ((segment.Type != TypeSegment.ASK_GET_PKEY) || (segment == null))
+                    if (segment.Type != TypeSegment.ASK_GET_PKEY)
                     {
                         Disconnect(socket);
                     }
@@ -71,7 +78,7 @@ namespace ProtocolCryptographyC
                             socket.Send(buffer);
                         }
 
-                        //wait RSA(login+password+aesKey)
+                        //wait RSA(hash+aesKey)
                         await Task.Run(() => segment = Segment.ParseSegment(socket));
                         if (segment == null)
                         {
@@ -87,6 +94,29 @@ namespace ProtocolCryptographyC
                             {
                                 //decrypt RSA
                                 buffer = rsa.Decrypt(segment.Payload, false);
+                                for (int i = 0; i < 20; i++) 
+                                {
+                                    hash[i] = buffer[i];
+                                }
+                                for(int i = 0; i < 32; i++)
+                                {
+                                    aes.Key[i] = buffer[20 + i];
+                                }
+                                for (int i = 0; i < 16; i++) 
+                                {
+                                    aes.IV[i] = buffer[52 + i];
+                                }
+
+                                //authorization
+                                if (!Enumerable.SequenceEqual(hash, hashServer))
+                                {
+                                    Disconnect(socket);
+                                }
+                                else
+                                {
+                                    //mod
+                                    fileWork.TransferFile();
+                                }
                             }
                         }
                     }
@@ -97,7 +127,7 @@ namespace ProtocolCryptographyC
             {
                 Disconnect(socket);
             }
-        }
+        }        
 
         private void Disconnect(Socket socket)
         {

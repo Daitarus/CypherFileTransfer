@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 
 namespace ProtocolCryptographyC
 {
@@ -12,6 +13,7 @@ namespace ProtocolCryptographyC
         private byte[] hash;
         RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
         private Aes aes;
+        private FileWork fileWork;
 
         public PccClient(IPEndPoint serverEndPoint, string login, string password)
         {
@@ -51,8 +53,8 @@ namespace ProtocolCryptographyC
                 publicKey.Modulus = segment.Payload;
                 rsa.ImportParameters(publicKey);
 
-                //send aesKey + login/password
-                int length = hash.Length + aes.Key.Length;
+                //send hash + aesKey
+                int length = hash.Length + aes.Key.Length + aes.IV.Length;
                 buffer = new byte[length];
                 for (int i = 0; i < hash.Length; i++) 
                 {
@@ -62,6 +64,11 @@ namespace ProtocolCryptographyC
                 {
                     buffer[hash.Length + i] = aes.Key[i];
                 }
+                for (int i = 0; i < aes.IV.Length; i++)
+                {
+                    buffer[hash.Length + aes.Key.Length + i] = aes.IV[i];
+                }
+
                 buffer = rsa.Encrypt(buffer, false);
                 buffer = Segment.PackSegment(TypeSegment.AUTHORIZATION, (byte)0, buffer);
                 if (buffer != null)
@@ -72,6 +79,7 @@ namespace ProtocolCryptographyC
                 {
                     return false;
                 }
+                fileWork = new FileWork(socket);
                 return true;
             }
             catch
@@ -79,13 +87,13 @@ namespace ProtocolCryptographyC
                 return false;
             }
         }
-        public void TransferFile(string fileInfo)
+        public bool TransferFile()
         {
-
+            return fileWork.TransferFile();
         }
-        public void GetFile(string fileInfo)
+        public bool GetFile(string homePath, FileInfo fileInfo)
         {
-
+            return fileWork.GetFile(homePath, fileInfo);
         }
         public void Disconnect()
         {

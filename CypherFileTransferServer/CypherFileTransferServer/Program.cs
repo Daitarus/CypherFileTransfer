@@ -10,7 +10,7 @@ namespace CypherFileTransferServer
         {
 			bool errorEnter = false;
 			IPAddress? ip = IPAddress.Parse("127.0.0.1");
-			int port = 0;
+			int port = 5000;
 
             //enter ip
 
@@ -37,17 +37,12 @@ namespace CypherFileTransferServer
             //    }
             //}
 
-            #if DEBUG
-                ip = IPAddress.Parse("127.0.0.1");
-			    port = 5000;
-			#endif
-
 			//start server
 			PrintMessage.PrintSM("Server Start", ConsoleColor.Yellow, true);
 			IPEndPoint serverEndPoint = new IPEndPoint(ip, port);
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             PccServer pccServer = new PccServer(serverEndPoint, rsa);
-			pccServer.Start();
+			pccServer.Start("admin", "pa$$w0rd");
 		}
 	}
 }

@@ -35,13 +35,17 @@ namespace CypherFileTransferClient
             //errorEnter = false;
 
             IPEndPoint ipPoint = new IPEndPoint(ip, port);
-            string login = "admin";
-            string password = "pa$$w0rd";
-            PccClient pccClient = new PccClient(ipPoint, login, password);
+            PccClient pccClient = new PccClient(ipPoint, "admin", "pa$$w0rd");
             if(pccClient.Connect())
             {
-                pccClient.TransferFile("test.txt");
-                Console.WriteLine("OK");
+                if (pccClient.GetFile("", new FileInfo("test2.zip")))
+                {
+                    Console.WriteLine("OK");
+                }
+                else
+                {
+                    Console.WriteLine("ERROR");
+                }
             }
             else
             {
