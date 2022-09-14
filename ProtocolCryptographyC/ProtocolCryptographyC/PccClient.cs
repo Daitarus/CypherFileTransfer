@@ -33,22 +33,19 @@ namespace ProtocolCryptographyC
                 socket.Connect(serverEndPoint);
 
                 //ask get publicKeyRSA
-                byte[]? buffer = Segment.PackSegment(TypeSegment.ASK_GET_PKEY, (byte)0, null);
-                if(buffer != null)
-                {
-                    socket.Send(buffer);
-                }
-                else
+                byte[] buffer = Segment.PackSegment(TypeSegment.ASK_GET_PKEY, (byte)0, null);
+                socket.Send(buffer);
+
+                //waiting answer publicKeyRSA
+                Segment? segment = Segment.ParseSegment(socket);
+                if(segment == null)
                 {
                     return false;
                 }
-
-                //waiting answer publicKeyRSA
-                Segment? segment;
-                do
+                if((segment.Type != TypeSegment.PKEY) || (segment.Payload == null))
                 {
-                    segment = Segment.ParseSegment(socket);
-                } while ((segment == null) || (segment.Type != TypeSegment.PKEY) || (segment.Payload == null));
+                    return false;
+                }
                 RSAParameters publicKey = rsa.ExportParameters(false);
                 publicKey.Modulus = segment.Payload;
                 rsa.ImportParameters(publicKey);
@@ -71,42 +68,45 @@ namespace ProtocolCryptographyC
 
                 buffer = rsa.Encrypt(buffer, false);
                 buffer = Segment.PackSegment(TypeSegment.AUTHORIZATION, (byte)0, buffer);
-                if (buffer != null)
-                {
-                    socket.Send(buffer);
-                }
-                else
+                if (buffer == null)
                 {
                     return false;
                 }
+                socket.Send(buffer);
                 fileWork = new FileWork(socket);
+                return true;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+        public bool TransferFile()
+        {
+            return fileWork.TransferFile(aes);
+        }
+        public bool GetFile(string homePath, FileInfo fileInfo)
+        {
+            return fileWork.GetFile(homePath, fileInfo, aes);
+        }
+        private bool Disconnect(Socket socket)
+        {
+            try
+            {
+                socket.Shutdown(SocketShutdown.Both);
                 return true;
             }
             catch
             {
                 return false;
             }
-        }
-        public bool TransferFile()
-        {
-            return fileWork.TransferFile();
-        }
-        public bool GetFile(string homePath, FileInfo fileInfo)
-        {
-            return fileWork.GetFile(homePath, fileInfo);
-        }
-        public void Disconnect()
-        {
-            try
+            finally
             {
                 if (socket != null)
                 {
-                    Console.WriteLine("Disconnection!");
-                    socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                 }
             }
-            catch { }
         }
     }
 }

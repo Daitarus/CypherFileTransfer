@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +15,8 @@ namespace ProtocolCryptographyC
 		private byte[] length;
 		private byte[]? payload;
 		private byte[]? buffer;
-		public static int lengthBlockFile = 16777210;
+		public static int lengthBlockFile = 16777199;
+		private static int lengthBlockFileCrypto = 16777200;
 
 		public TypeSegment Type { get { return type; } }
 		public byte NumSegment { get { return numSegment; } }
@@ -79,7 +81,7 @@ namespace ProtocolCryptographyC
 			}
 			if (payload != null)
 			{
-				if (payload.Length > lengthBlockFile)
+				if (payload.Length > lengthBlockFileCrypto)
 				{
 					return null;
 				}
@@ -159,5 +161,13 @@ namespace ProtocolCryptographyC
 				return null;
             }
         }
+
+		public void DecryptPayload(Aes aes)
+		{
+			if (payload != null)
+			{
+				payload = FileWork.DecryptAES(payload, aes);
+			}
+		}
 	}
 }

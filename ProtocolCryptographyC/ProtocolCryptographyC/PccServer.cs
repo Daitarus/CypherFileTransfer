@@ -50,7 +50,6 @@ namespace ProtocolCryptographyC
             Console.WriteLine("New connection...");
             Segment segment = new Segment();
             byte[] hash = new byte[20];
-            byte[] data = new byte[256];
             Aes aes = Aes.Create();
             FileWork fileWork = new FileWork(socket);
 
@@ -94,18 +93,22 @@ namespace ProtocolCryptographyC
                             {
                                 //decrypt RSA
                                 buffer = rsa.Decrypt(segment.Payload, false);
+                                byte[] aesKey = new byte[32];
+                                byte[] aesIv = new byte[16];
                                 for (int i = 0; i < 20; i++) 
                                 {
                                     hash[i] = buffer[i];
                                 }
                                 for(int i = 0; i < 32; i++)
                                 {
-                                    aes.Key[i] = buffer[20 + i];
+                                    aesKey[i] = buffer[20 + i];
                                 }
                                 for (int i = 0; i < 16; i++) 
                                 {
-                                    aes.IV[i] = buffer[52 + i];
+                                    aesIv[i] = buffer[52 + i];
                                 }
+                                aes.Key = aesKey;
+                                aes.IV = aesIv;
 
                                 //authorization
                                 if (!Enumerable.SequenceEqual(hash, hashServer))
@@ -115,7 +118,7 @@ namespace ProtocolCryptographyC
                                 else
                                 {
                                     //mod
-                                    fileWork.TransferFile();
+                                    fileWork.TransferFile(aes);
                                 }
                             }
                         }
@@ -128,19 +131,24 @@ namespace ProtocolCryptographyC
                 Disconnect(socket);
             }
         }        
-
-        private void Disconnect(Socket socket)
+        private bool Disconnect(Socket socket)
         {
             try
             {
-                if (socket != null)
+                socket.Shutdown(SocketShutdown.Both);
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
+            finally
+            {
+                if(socket != null)
                 {
-                    Console.WriteLine("Disconnection!");
-                    socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                 }
             }
-            catch { }
         }
     }
 }
