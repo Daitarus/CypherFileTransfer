@@ -15,17 +15,17 @@ namespace ProtocolCryptographyC
         private Aes aes;
         private FileWork fileWork;
 
-        public PccClient(IPEndPoint serverEndPoint, string login, string password)
+        public PccClient(IPEndPoint serverEndPoint, string authorizationString)
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.serverEndPoint = serverEndPoint;
             using (SHA1Managed sha1 = new SHA1Managed())
             {
-                hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(login + password));
+                hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(authorizationString));
             }
             aes = Aes.Create();
         }
-        public bool Connect()
+        public System_Message Connect()
         {
             try
             {
@@ -33,18 +33,18 @@ namespace ProtocolCryptographyC
                 socket.Connect(serverEndPoint);
 
                 //ask get publicKeyRSA
-                byte[] buffer = Segment.PackSegment(TypeSegment.ASK_GET_PKEY, (byte)0, null);
+                byte[]? buffer = Segment.PackSegment(TypeSegment.ASK_GET_PKEY, (byte)0, null);
                 socket.Send(buffer);
 
                 //waiting answer publicKeyRSA
                 Segment? segment = Segment.ParseSegment(socket);
                 if(segment == null)
                 {
-                    return false;
+                    return System_Message.GET_NOT_PCC;
                 }
                 if((segment.Type != TypeSegment.PKEY) || (segment.Payload == null))
                 {
-                    return false;
+                    return System_Message.GET_NOT_PCC;
                 }
                 RSAParameters publicKey = rsa.ExportParameters(false);
                 publicKey.Modulus = segment.Payload;
@@ -70,42 +70,47 @@ namespace ProtocolCryptographyC
                 buffer = Segment.PackSegment(TypeSegment.AUTHORIZATION, (byte)0, buffer);
                 if (buffer == null)
                 {
-                    return false;
+                    return System_Message.NO_TRANSFER_AUTHORIZATION_INFO;
                 }
                 socket.Send(buffer);
+
+                //wait answer authorization
+                segment = Segment.ParseSegment(socket);
+                if(segment == null)
+                {
+                    return System_Message.NOT_CONNECTED;
+                }
+                if(segment.Type != TypeSegment.ANSWER_AUTHORIZATION_YES)
+                {
+                    return System_Message.NOT_CONNECTED;
+                }
+
+                //connect
                 fileWork = new FileWork(socket);
-                return true;
+                return System_Message.CONNECTED;
             }
             catch
             {
-                return true;
+                return System_Message.NOT_CONNECTED;
             }
         }
-        public bool TransferFile()
+        public System_Message TransferFile()
         {
             return fileWork.TransferFile(aes);
         }
-        public bool GetFile(string homePath, FileInfo fileInfo)
+        public System_Message GetFile(string homePath, FileInfo fileInfo)
         {
             return fileWork.GetFile(homePath, fileInfo, aes);
         }
-        private bool Disconnect(Socket socket)
+        public void Disconnect(Socket socket)
         {
             try
             {
                 socket.Shutdown(SocketShutdown.Both);
-                return true;
-            }
-            catch
-            {
-                return false;
             }
             finally
             {
-                if (socket != null)
-                {
-                    socket.Close();
-                }
+                socket.Close();
             }
         }
     }

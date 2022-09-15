@@ -12,7 +12,9 @@ namespace ProtocolCryptographyC
         ASK_GET_PKEY = 1,
         PKEY = 2,
         AUTHORIZATION = 3,
-        ASK_GET_FILE = 4,
-        FILE = 5
+        ANSWER_AUTHORIZATION_YES = 4,
+        ANSWER_AUTHORIZATION_NO = 5,
+        ASK_GET_FILE = 6,
+        FILE = 7,
     }
 }

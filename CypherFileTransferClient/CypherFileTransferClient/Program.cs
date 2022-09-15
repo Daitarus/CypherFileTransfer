@@ -35,39 +35,47 @@ namespace CypherFileTransferClient
             }
             errorEnter = false;
 
-            //enter file name
-            string? fileName = "";
-            while(!errorEnter)
-            {
-                PrintMessage.PrintSM("Please, enter file name: ", ConsoleColor.White, false);
-                fileName = Console.ReadLine();
-                if ((fileName != null) && (fileName != "")) 
-                {
-                    errorEnter = true;
-                }
-                if (!errorEnter)
-                {
-                    PrintMessage.PrintSM("Error: Incorrect data !!!", ConsoleColor.Red, true);
-                }
-            }
-            errorEnter = false;
+            //enter authorizationString
+            PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
+            string? authorizationString = Console.ReadLine();
 
+            //start client
             IPEndPoint ipPoint = new IPEndPoint(ip, port);
-            PccClient pccClient = new PccClient(ipPoint, "admin", "pa$$w0rd");
-            if(pccClient.Connect())
+            PccClient pccClient = new PccClient(ipPoint, authorizationString);
+            System_Message system_message;
+            system_message = pccClient.Connect();
+            if (system_message == System_Message.CONNECTED)
             {
-                if (pccClient.GetFile("", new FileInfo(fileName)))
+                PrintMessage.PrintSM("Connect !", ConsoleColor.Yellow, true);
+                //get file
+                string? fileName;
+                do
                 {
-                    Console.WriteLine("OK");
-                }
-                else
-                {
-                    Console.WriteLine("ERROR");
-                }
+                    //enter fileName
+                    do
+                    {
+                        PrintMessage.PrintSM("Please, enter file name: ", ConsoleColor.White, false);
+                        fileName = Console.ReadLine();
+                        if((fileName == null) || (fileName == ""))
+                        {
+                            PrintMessage.PrintSM("Error: empty file name !!!", ConsoleColor.Red, true);
+                        }
+                    } while ((fileName == null) || (fileName == ""));
+                    system_message = pccClient.GetFile("", new FileInfo(fileName));
+                    if(system_message == System_Message.FILE_WAS_TRANSFER)
+                    {
+                        PrintMessage.PrintSM("File was get !", ConsoleColor.Cyan, true);
+                    }
+                    if(system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE)
+                    {
+                        PrintMessage.PrintSM("File not faund or very big !", ConsoleColor.Red, true);
+                    }
+                } while ((system_message == System_Message.FILE_WAS_TRANSFER) || (system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE));
+                PrintMessage.PrintSM("Error: File was not tranfer !!!", ConsoleColor.Red, true);
             }
             else
             {
-                Console.WriteLine("ERROR");
+                PrintMessage.PrintSM("Error: No connect !!!", ConsoleColor.Red, true);
             }
             Console.ReadLine();
         }
