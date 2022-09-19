@@ -1,4 +1,5 @@
-﻿using ProtocolCryptographyC;
+﻿using NLog;
+using ProtocolCryptographyC;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,6 +10,7 @@ namespace CypherFileTransferServer
     {
         static byte[] hashServer;
         static PccServer pccServer;
+        static Logger logger = LogManager.GetCurrentClassLogger();
 
         static void Main(string[] args)
         {
@@ -40,7 +42,7 @@ namespace CypherFileTransferServer
             }
 
             //enter authorizationString
-            PrintMessage.PrintSM("Please, password for connect: ", ConsoleColor.White, false);
+            PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
             hashServer = GetHash(Console.ReadLine());
 
 
@@ -49,7 +51,7 @@ namespace CypherFileTransferServer
 			IPEndPoint serverEndPoint = new IPEndPoint(ip, port);
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             pccServer = new PccServer(serverEndPoint, rsa);
-			pccServer.Start(Authorization, Algorithm);
+			pccServer.Start(Authorization, Algorithm, PrintSystemMessage);
 		}
 
         private static byte[] GetHash(string authoriazationString)
@@ -71,21 +73,51 @@ namespace CypherFileTransferServer
             }
         }
 
-        private static void Algorithm(Aes aes)
+        private static void Algorithm(ClientInfo clientInfo)
         {
-            System_Message system_message;
+            string system_message, logString;
+
             do
             {
-                system_message = pccServer.TransferFile(aes);
-                if(system_message == System_Message.FILE_WAS_TRANSFER)
+                system_message = pccServer.TransferFile(clientInfo.aes);
+                logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
+                if (system_message[0]=='E')
                 {
-                    PrintMessage.PrintSM("File was tranfer !", ConsoleColor.Cyan, true);
+                    logger.Error(logString);
                 }
-                if(system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE)
+                if(system_message[0]=='W')
                 {
-                    PrintMessage.PrintSM("File not faund or very big !", ConsoleColor.Cyan, true);
+                    logger.Warn(logString);
                 }
-            } while ((system_message == System_Message.FILE_WAS_TRANSFER) || (system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE));
+                if (system_message[0]=='F')
+                {
+                    logger.Fatal(logString);
+                }
+                if (system_message[0]=='I')
+                {
+                    logger.Info(logString);
+                }
+            } while ((system_message[0]=='W') || (system_message[0]=='I'));
+        }
+
+        private static void PrintSystemMessage(string SystemMessage)
+        {
+            if (SystemMessage[0] == 'E')
+            {
+                logger.Error(SystemMessage);
+            }
+            if (SystemMessage[0] == 'W')
+            {
+                logger.Warn(SystemMessage);
+            }
+            if (SystemMessage[0] == 'F')
+            {
+                logger.Fatal(SystemMessage);
+            }
+            if (SystemMessage[0] == 'I')
+            {
+                logger.Info(SystemMessage);
+            }
         }
 	}
 }

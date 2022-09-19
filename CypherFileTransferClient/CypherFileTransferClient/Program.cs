@@ -39,15 +39,17 @@ namespace CypherFileTransferClient
             PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
             string? authorizationString = Console.ReadLine();
 
-            //start client
+            //connect client
             IPEndPoint ipPoint = new IPEndPoint(ip, port);
             PccClient pccClient = new PccClient(ipPoint, authorizationString);
-            System_Message system_message;
+            string system_message;
             system_message = pccClient.Connect();
-            if (system_message == System_Message.CONNECTED)
+
+            //get files
+            if (system_message[0] == 'I')
             {
-                PrintMessage.PrintSM("Connect !", ConsoleColor.Yellow, true);
-                //get file
+                PrintMessage.PrintSM(system_message, ConsoleColor.Cyan, true);
+
                 string? fileName;
                 do
                 {
@@ -62,20 +64,28 @@ namespace CypherFileTransferClient
                         }
                     } while ((fileName == null) || (fileName == ""));
                     system_message = pccClient.GetFile("", new FileInfo(fileName));
-                    if(system_message == System_Message.FILE_WAS_TRANSFER)
+
+                    //print
+                    if (system_message[0] == 'I')
                     {
-                        PrintMessage.PrintSM("File was get !", ConsoleColor.Cyan, true);
+                        PrintMessage.PrintSM(system_message, ConsoleColor.White, true);
                     }
-                    if(system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE)
+                    if (system_message[0] == 'W')
                     {
-                        PrintMessage.PrintSM("File not faund or very big !", ConsoleColor.Red, true);
+                        PrintMessage.PrintSM(system_message, ConsoleColor.Yellow, true);
                     }
-                } while ((system_message == System_Message.FILE_WAS_TRANSFER) || (system_message == System_Message.NOT_FOUND_ALLOWABLE_FILE));
-                PrintMessage.PrintSM("Error: File was not tranfer !!!", ConsoleColor.Red, true);
+                    if ((system_message[0] == 'E') || (system_message[0] == 'F')) 
+                    {
+                        PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
+                    }
+                } while ((system_message[0] == 'I') || (system_message[0] == 'W'));
+
+                //disconnect
+                PrintMessage.PrintSM(pccClient.Disconnect(), ConsoleColor.Yellow, true);
             }
             else
             {
-                PrintMessage.PrintSM("Error: No connect !!!", ConsoleColor.Red, true);
+                PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
             }
             Console.ReadLine();
         }

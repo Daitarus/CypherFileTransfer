@@ -12,7 +12,8 @@ namespace ProtocolCryptographyC
     public sealed class PccServer
     {
         public delegate bool Authorization(byte[] hash);
-        public delegate void Algorithm(Aes aes);
+        public delegate void Algorithm(ClientInfo clientInfo);
+        public delegate void GetSystemMessage(string systemMessage);
 
         private IPEndPoint serverEndPoint;
         private Socket listenSocket  = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -25,7 +26,7 @@ namespace ProtocolCryptographyC
             this.serverEndPoint = serverEndPoint;
             this.rsa = rsa;
         }
-        public System_Message Start(Authorization authorization, Algorithm algorithm)
+        public string Start(Authorization authorization, Algorithm algorithm, GetSystemMessage getSystemMessage)
         {
             try
 			{
@@ -34,18 +35,18 @@ namespace ProtocolCryptographyC
 					listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 					listenSocket.Bind(serverEndPoint);
 					listenSocket.Listen(1);
-					//get connection
-					ClientWork(listenSocket.Accept(), authorization, algorithm);
+					ClientWork(listenSocket.Accept(), authorization, algorithm, getSystemMessage);
 					listenSocket.Close();
 				}
 			}
-			catch
+			catch(Exception e)
 			{
-				return System_Message.ERROR_START;
+				return $"F:{e}";
 			}
 		}
-		private async void ClientWork(Socket socket, Authorization authorization, Algorithm algorithm)
+		private async void ClientWork(Socket socket, Authorization authorization, Algorithm algorithm, GetSystemMessage getSystemMessage)
         {
+            getSystemMessage($"I:Client({((IPEndPoint)(socket.RemoteEndPoint)).Address.ToString()}:{((IPEndPoint)(socket.RemoteEndPoint)).Port.ToString()}) - connected");
             Segment segment = new Segment();
             byte[] hash = new byte[20];
             Aes aes = Aes.Create();
@@ -74,19 +75,19 @@ namespace ProtocolCryptographyC
                             {
                                 //decrypt RSA
                                 buffer = rsa.Decrypt(segment.Payload, false);
-                                byte[] aesKey = new byte[32];
-                                byte[] aesIv = new byte[16];
-                                for (int i = 0; i < 20; i++) 
+                                byte[] aesKey = new byte[aes.Key.Length];
+                                byte[] aesIv = new byte[aes.IV.Length];
+                                for (int i = 0; i < hash.Length; i++) 
                                 {
                                     hash[i] = buffer[i];
                                 }
-                                for(int i = 0; i < 32; i++)
+                                for(int i = 0; i < aes.Key.Length; i++)
                                 {
-                                    aesKey[i] = buffer[20 + i];
+                                    aesKey[i] = buffer[hash.Length + i];
                                 }
-                                for (int i = 0; i < 16; i++) 
+                                for (int i = 0; i < aes.IV.Length; i++) 
                                 {
-                                    aesIv[i] = buffer[52 + i];
+                                    aesIv[i] = buffer[hash.Length + aes.Key.Length + i];
                                 }
                                 aes.Key = aesKey;
                                 aes.IV = aesIv;
@@ -94,14 +95,16 @@ namespace ProtocolCryptographyC
                                 //authorization
                                 if (authorization(hash))
                                 {
+                                    getSystemMessage($"I:Client({((IPEndPoint)(socket.RemoteEndPoint)).Address.ToString()}:{((IPEndPoint)(socket.RemoteEndPoint)).Port.ToString()}) - authorization");
                                     buffer = Segment.PackSegment(TypeSegment.ANSWER_AUTHORIZATION_YES, (byte)0, null);
                                     socket.Send(buffer);
                                     //algorithm execution
                                     fileWork = new FileWork(socket);
-                                    algorithm(aes);
+                                    algorithm(new ClientInfo(((IPEndPoint)(socket.RemoteEndPoint)).Address.ToString(), ((IPEndPoint)(socket.RemoteEndPoint)).Port.ToString(), aes, DateTime.Now));
                                 }
                                 else
                                 {
+                                    getSystemMessage($"I:Client({((IPEndPoint)(socket.RemoteEndPoint)).Address.ToString()}:{((IPEndPoint)(socket.RemoteEndPoint)).Port.ToString()}) - no authorization");
                                     buffer = Segment.PackSegment(TypeSegment.ANSWER_AUTHORIZATION_NO, (byte)0, null);
                                     socket.Send(buffer);
                                 }
@@ -110,31 +113,38 @@ namespace ProtocolCryptographyC
                     }
                 }
             }
+            catch(Exception e)
+            {
+                getSystemMessage($"F:{e}");
+            }
             finally
             {
-                Disconnect(socket);
+                getSystemMessage(Disconnect(socket));
             }
         }
 
-        public System_Message TransferFile(Aes aes)
+        public string TransferFile(Aes aes)
         {
             return fileWork.TransferFile(aes);
         }
-        public System_Message GetFile(string homePath, FileInfo fileInfo, Aes aes)
+        public string GetFile(string homePath, FileInfo fileInfo, Aes aes)
         {
             return fileWork.GetFile(homePath, fileInfo, aes);
         }
 
-        private void Disconnect(Socket socket)
+        private string Disconnect(Socket socket)
         {
+            string SystemMessage = "I:disconnect";
             try
             {
+                SystemMessage = $"I:Client({((IPEndPoint)(socket.RemoteEndPoint)).Address.ToString()}:{((IPEndPoint)(socket.RemoteEndPoint)).Port.ToString()}) - disconnect";
                 socket.Shutdown(SocketShutdown.Both);
             }
             finally
             {
                 socket.Close();
             }
+            return SystemMessage;
         }  
     }
 }

@@ -25,7 +25,7 @@ namespace ProtocolCryptographyC
             }
             aes = Aes.Create();
         }
-        public System_Message Connect()
+        public string Connect()
         {
             try
             {
@@ -40,11 +40,11 @@ namespace ProtocolCryptographyC
                 Segment? segment = Segment.ParseSegment(socket);
                 if(segment == null)
                 {
-                    return System_Message.GET_NOT_PCC;
+                    return "E:Public key RSA wasn't get";
                 }
                 if((segment.Type != TypeSegment.PKEY) || (segment.Payload == null))
                 {
-                    return System_Message.GET_NOT_PCC;
+                    return "E:Public key RSA wasn't get";
                 }
                 RSAParameters publicKey = rsa.ExportParameters(false);
                 publicKey.Modulus = segment.Payload;
@@ -70,7 +70,7 @@ namespace ProtocolCryptographyC
                 buffer = Segment.PackSegment(TypeSegment.AUTHORIZATION, (byte)0, buffer);
                 if (buffer == null)
                 {
-                    return System_Message.NO_TRANSFER_AUTHORIZATION_INFO;
+                    return "E:Wasn't send authorization info";
                 }
                 socket.Send(buffer);
 
@@ -78,31 +78,31 @@ namespace ProtocolCryptographyC
                 segment = Segment.ParseSegment(socket);
                 if(segment == null)
                 {
-                    return System_Message.NOT_CONNECTED;
+                    return "E:No authorization";
                 }
                 if(segment.Type != TypeSegment.ANSWER_AUTHORIZATION_YES)
                 {
-                    return System_Message.NOT_CONNECTED;
+                    return "E:No authorization";
                 }
 
                 //connect
                 fileWork = new FileWork(socket);
-                return System_Message.CONNECTED;
+                return "I:Successful connect";
             }
-            catch
+            catch(Exception e)
             {
-                return System_Message.NOT_CONNECTED;
+                return $"F:{e}";
             }
         }
-        public System_Message TransferFile()
+        public string TransferFile()
         {
             return fileWork.TransferFile(aes);
         }
-        public System_Message GetFile(string homePath, FileInfo fileInfo)
+        public string GetFile(string homePath, FileInfo fileInfo)
         {
             return fileWork.GetFile(homePath, fileInfo, aes);
         }
-        public void Disconnect(Socket socket)
+        public string Disconnect()
         {
             try
             {
@@ -112,6 +112,7 @@ namespace ProtocolCryptographyC
             {
                 socket.Close();
             }
+            return "I:Disconnect";
         }
     }
 }

@@ -16,7 +16,7 @@ namespace ProtocolCryptographyC
         {
             this.socket = socket;
         }
-        public System_Message TransferFile(Aes aes)
+        public string TransferFile(Aes aes)
         {
             try
             {
@@ -24,11 +24,11 @@ namespace ProtocolCryptographyC
                 Segment? segment = Segment.ParseSegment(socket);
                 if(segment == null)
                 {
-                    return System_Message.ERROR_ASK_GET_FILE;
+                    return "E:Wasn't get file info";
                 }
                 if((segment.Type != TypeSegment.ASK_GET_FILE) || (segment.Payload == null))
                 {
-                    return System_Message.ERROR_ASK_GET_FILE;
+                    return "E:Wasn't get file info";
                 }
                 segment.DecryptPayload(aes);
                 FileInfo fileInfo = new FileInfo(Encoding.UTF8.GetString(segment.Payload));
@@ -41,14 +41,14 @@ namespace ProtocolCryptographyC
                 {
                     buffer = Segment.PackSegment(TypeSegment.FILE, (byte)0, EncryptAES(Encoding.UTF8.GetBytes("error"),aes));
                     socket.Send(buffer);
-                    return System_Message.NOT_FOUND_ALLOWABLE_FILE;
+                    return $"W:File not found - File:\"{fileInfo.Name}\"";
                 }
                 long numAllBlock = (long)Math.Ceiling((double)fileInfo.Length / (double)Segment.lengthBlockFile);
                 if ((fileInfo.Length == 0) || (numAllBlock >= 256))
                 {
                     buffer = Segment.PackSegment(TypeSegment.FILE, (byte)0, EncryptAES(Encoding.UTF8.GetBytes("error"), aes));
                     socket.Send(buffer);
-                    return System_Message.NOT_FOUND_ALLOWABLE_FILE;
+                    return $"W:File is very big - File:\"{fileInfo.Name}\"";
                 }
                 //send first file part aes(system message or number of block + fileInfo)
                 buffer = Encoding.UTF8.GetBytes(fileInfo.Name);
@@ -61,7 +61,7 @@ namespace ProtocolCryptographyC
                 buffer = Segment.PackSegment(TypeSegment.FILE, (byte)0, EncryptAES(bufferFile, aes));
                 if (buffer == null)
                 {
-                    return System_Message.NOT_FILE_INFO;
+                    return $"E:Wasn't send file info - File:\"{fileInfo.Name}\"";
                 }
                 socket.Send(buffer);
 
@@ -85,28 +85,24 @@ namespace ProtocolCryptographyC
                         buffer = Segment.PackSegment(TypeSegment.FILE, (byte)i, EncryptAES(bufferFile, aes));
                         if (buffer == null)
                         {
-                            return System_Message.FILE_WAS_NOT_TRANSFER;
+                            return $"E:Wasn't send file block {i}/{numAllBlock} - File:\"{fileInfo.Name}\"";
                         }
                         socket.Send(buffer);
                     }
                 }
-                return System_Message.FILE_WAS_TRANSFER;
+                return $"I:All file's block [{numAllBlock}] was send - File:\"{fileInfo.Name}\"";
             }
-            catch
+            catch(Exception e)
             {
-                return System_Message.FILE_WAS_NOT_TRANSFER;
+                return $"F:{e}";
             }
         }
-        public System_Message GetFile(string homePath, FileInfo fileInfo, Aes aes)
+        public string GetFile(string homePath, FileInfo fileInfo, Aes aes)
         {
             try
             {
                 //encrypt fileInfo + ask get file
                 byte[]? bufferFile = Segment.PackSegment(TypeSegment.ASK_GET_FILE, (byte)0, EncryptAES(Encoding.UTF8.GetBytes(fileInfo.Name),aes));
-                if (bufferFile == null)
-                {
-                    return System_Message.ERROR_ASK_GET_FILE;
-                }
                 socket.Send(bufferFile);
 
                 //get first part file aes(system message or number of block + fileInfo)
@@ -115,16 +111,16 @@ namespace ProtocolCryptographyC
                 
                 if (segment == null)
                 {
-                    return System_Message.NOT_FILE_INFO;
+                    return "E:Wasn't get file info";
                 }
                 if ((segment.Type != TypeSegment.FILE) || (segment.Payload == null))
                 {
-                    return System_Message.NOT_FILE_INFO;
+                    return "E:Wasn't get file info";
                 }
                 segment.DecryptPayload(aes);
                 if (Encoding.UTF8.GetString(segment.Payload) == "error")
                 {
-                    return System_Message.NOT_FOUND_ALLOWABLE_FILE;
+                    return $"W:File not found or very big - File:\"{fileInfo.Name}\"";
                 }
 
                 byte numAllBlock = segment.Payload[0];
@@ -133,7 +129,7 @@ namespace ProtocolCryptographyC
                 {
                     buffer[i - 1] = segment.Payload[i];
                 }
-                fileInfo = new FileInfo(homePath + Encoding.UTF8.GetString(buffer));
+                fileInfo = new FileInfo(Encoding.UTF8.GetString(buffer));
 
                 //get file
                 using (FileStream fstream = new FileStream(homePath + fileInfo, FileMode.OpenOrCreate))
@@ -143,22 +139,22 @@ namespace ProtocolCryptographyC
                         segment = Segment.ParseSegment(socket);
                         if (segment == null)
                         {
-                            return System_Message.FILE_WAS_NOT_TRANSFER;
+                            return $"E:Wasn't get file block {i}/{numAllBlock} - File:\"{fileInfo.Name}\"";
                         }
                         if ((segment.Type != TypeSegment.FILE) || (segment.Payload == null))
                         {
-                            return System_Message.FILE_WAS_NOT_TRANSFER;
+                            return $"E:Wasn't get file block {i}/{numAllBlock} - File:\"{fileInfo.Name}\"";
                         }
                         segment.DecryptPayload(aes);
                         fstream.Seek(i * Segment.lengthBlockFile, SeekOrigin.Begin);
                         fstream.Write(segment.Payload);
                     }
                 }
-                return System_Message.FILE_WAS_TRANSFER;
+                return $"I:All file's block [{numAllBlock}] was get - File:\"{fileInfo.Name}\"";
             }
-            catch
+            catch(Exception e)
             {
-                return System_Message.FILE_WAS_NOT_TRANSFER;
+                return $"F:{e}";
             }
         }
 

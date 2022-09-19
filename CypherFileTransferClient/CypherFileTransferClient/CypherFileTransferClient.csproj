@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <Reference Include="ProtocolCryptographyC">
-      <HintPath>..\..\ProtocolCryptographyC\ProtocolCryptographyC\bin\Debug\net6.0\ProtocolCryptographyC.dll</HintPath>
+      <HintPath>..\..\ProtocolCryptographyC\ProtocolCryptographyC\bin\Release\net6.0\ProtocolCryptographyC.dll</HintPath>
     </Reference>
   </ItemGroup>
 
