@@ -98,9 +98,9 @@ namespace ProtocolCryptographyC
         {
             return fileWork.TransferFile(aes);
         }
-        public string GetFile(string homePath, FileInfo fileInfo)
+        public string GetFile(FileInfo fileInfo)
         {
-            return fileWork.GetFile(homePath, fileInfo, aes);
+            return fileWork.GetFile(fileInfo, aes);
         }
         public string Disconnect()
         {

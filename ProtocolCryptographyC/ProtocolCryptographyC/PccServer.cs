@@ -127,9 +127,9 @@ namespace ProtocolCryptographyC
         {
             return fileWork.TransferFile(aes);
         }
-        public string GetFile(string homePath, FileInfo fileInfo, Aes aes)
+        public string GetFile(FileInfo fileInfo, Aes aes)
         {
-            return fileWork.GetFile(homePath, fileInfo, aes);
+            return fileWork.GetFile(fileInfo, aes);
         }
 
         private string Disconnect(Socket socket)

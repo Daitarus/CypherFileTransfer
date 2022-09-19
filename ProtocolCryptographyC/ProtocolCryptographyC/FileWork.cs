@@ -97,7 +97,7 @@ namespace ProtocolCryptographyC
                 return $"F:{e}";
             }
         }
-        public string GetFile(string homePath, FileInfo fileInfo, Aes aes)
+        public string GetFile(FileInfo fileInfo, Aes aes)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace ProtocolCryptographyC
                 fileInfo = new FileInfo(Encoding.UTF8.GetString(buffer));
 
                 //get file
-                using (FileStream fstream = new FileStream(homePath + fileInfo, FileMode.OpenOrCreate))
+                using (FileStream fstream = new FileStream(fileInfo.Name, FileMode.OpenOrCreate))
                 {
                     for (int i = 0; i < numAllBlock; i++)
                     {
