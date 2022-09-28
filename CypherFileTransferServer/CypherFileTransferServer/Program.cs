@@ -86,7 +86,7 @@ namespace CypherFileTransferServer
                     logger.Fatal(logString);
                     break;
                 }
-                system_message = pccServer.SendFile(new FileInfo(system_message), clientInfo.aes);
+                system_message = pccServer.SendFile(system_message, clientInfo.aes);
                 logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
                 if (system_message[0]=='E')
                 {
