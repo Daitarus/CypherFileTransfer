@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CypherFileTransferServer", "CypherFileTransferServer\CypherFileTransferServer.csproj", "{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolCryptographyC", "..\ProtocolCryptographyC\ProtocolCryptographyC\ProtocolCryptographyC.csproj", "{650FF15F-B004-48D2-A664-57797F1C2BB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CypherFileTransferServer", "CypherFileTransferServer\CypherFileTransferServer.csproj", "{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Release|Any CPU.Build.0 = Release|Any CPU
-		{650FF15F-B004-48D2-A664-57797F1C2BB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{650FF15F-B004-48D2-A664-57797F1C2BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{650FF15F-B004-48D2-A664-57797F1C2BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{650FF15F-B004-48D2-A664-57797F1C2BB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
