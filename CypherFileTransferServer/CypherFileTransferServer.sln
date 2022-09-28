@@ -5,6 +5,10 @@ VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CypherFileTransferServer", "CypherFileTransferServer\CypherFileTransferServer.csproj", "{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CypherFileTransferClient", "..\CypherFileTransferClient\CypherFileTransferClient\CypherFileTransferClient.csproj", "{5FE23931-EE2F-4614-88AF-1AD610B620F7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolCryptographyC", "..\..\ProtocolCryptographyC\ProtocolCryptographyC\ProtocolCryptographyC.csproj", "{6F87BA8F-4FA6-487A-A79B-57483C967F21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E623E4A-F458-46E1-9EE8-DA8A78D4B513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

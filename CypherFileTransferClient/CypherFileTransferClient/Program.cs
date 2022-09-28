@@ -53,6 +53,16 @@ namespace CypherFileTransferClient
                 string? fileName;
                 do
                 {
+                    //enter path
+                    PrintMessage.PrintSM("Please, enter file's directory: ", ConsoleColor.White, false);
+                    string? path = Console.ReadLine();
+                    if (path != null)
+                    {
+                        if (path[path.Length - 1] != '\\')
+                        {
+                            path += '\\';
+                        }
+                    }
                     //enter fileName
                     do
                     {
@@ -63,7 +73,7 @@ namespace CypherFileTransferClient
                             PrintMessage.PrintSM("Error: empty file name !!!", ConsoleColor.Red, true);
                         }
                     } while ((fileName == null) || (fileName == ""));
-                    system_message = pccClient.GetFile(new FileInfo(fileName));
+                    system_message = pccClient.GetFile(path, new FileInfo(fileName));
 
                     //print
                     if (system_message[0] == 'I')
