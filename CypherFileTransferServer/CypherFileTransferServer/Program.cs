@@ -79,7 +79,14 @@ namespace CypherFileTransferServer
 
             do
             {
-                system_message = pccServer.TransferFile(clientInfo.aes);
+                system_message = pccServer.GetFileInfo(clientInfo.aes);
+                if (system_message[0]=='F')
+                {
+                    logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
+                    logger.Fatal(logString);
+                    break;
+                }
+                system_message = pccServer.SendFile(new FileInfo(system_message), clientInfo.aes);
                 logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
                 if (system_message[0]=='E')
                 {

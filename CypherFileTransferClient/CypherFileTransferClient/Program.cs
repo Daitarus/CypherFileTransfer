@@ -73,7 +73,13 @@ namespace CypherFileTransferClient
                             PrintMessage.PrintSM("Error: empty file name !!!", ConsoleColor.Red, true);
                         }
                     } while ((fileName == null) || (fileName == ""));
-                    system_message = pccClient.GetFile(path, new FileInfo(fileName));
+                    system_message = pccClient.SendFileInfo(path, new FileInfo(fileName));
+                    if (system_message[0]=='F')
+                    {
+                        PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
+                        break;
+                    }
+                    system_message = pccClient.GetFile(new FileInfo(fileName));
 
                     //print
                     if (system_message[0] == 'I')
