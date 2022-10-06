@@ -3,6 +3,7 @@ using ProtocolCryptographyC;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using CryptL;
 
 namespace CypherFileTransferServer
 {
@@ -43,24 +44,17 @@ namespace CypherFileTransferServer
 
             //enter authorizationString
             PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
-            hashServer = GetHash(Console.ReadLine());
+            hashServer = HashSHA256.GetHash(Encoding.UTF8.GetBytes(Console.ReadLine()));
 
 
             //start server
             PrintMessage.PrintSM("Server Start...", ConsoleColor.Yellow, true);
 			IPEndPoint serverEndPoint = new IPEndPoint(ip, port);
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            pccServer = new PccServer(serverEndPoint, rsa);
+            CryptRSA cryptRSA = new CryptRSA();
+            pccServer = new PccServer(serverEndPoint, cryptRSA);
 			pccServer.Start(Authorization, Algorithm, PrintSystemMessage);
 		}
 
-        private static byte[] GetHash(string authoriazationString)
-        {
-            using (SHA1Managed sha1 = new SHA1Managed())
-            {
-               return sha1.ComputeHash(Encoding.UTF8.GetBytes(authoriazationString));
-            }
-        }
         private static bool Authorization(byte[] hash)
         {
             if (Enumerable.SequenceEqual(hash, hashServer))
@@ -79,15 +73,15 @@ namespace CypherFileTransferServer
 
             do
             {
-                system_message = pccServer.GetFileInfo(clientInfo.aes);
+                system_message = pccServer.fileTransport.GetFileInfo();
                 if (system_message[0]=='F')
                 {
-                    logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
+                    logString = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port} - {system_message}";
                     logger.Fatal(logString);
                     break;
                 }
-                system_message = pccServer.SendFile(system_message, clientInfo.aes);
-                logString = $"{clientInfo.Ip}:{clientInfo.Port} - {system_message}";
+                system_message = pccServer.fileTransport.SendFile(system_message);
+                logString = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port} - {system_message}";
                 if (system_message[0]=='E')
                 {
                     logger.Error(logString);

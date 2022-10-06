@@ -5,22 +5,16 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
+  </PropertyGroup>   
+
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="5.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="ProtocolCryptographyC">
-      <HintPath>..\..\..\ProtocolCryptographyC\ProtocolCryptographyC\bin\Release\net6.0\ProtocolCryptographyC.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
+	  <PackageReference Include="NLog" Version="5.0.4" />
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <ProjectReference Include="..\..\..\..\Cryptography\CryptL\CryptL\CryptL.csproj" />
+	  <ProjectReference Include="..\..\..\ProtocolCryptographyC\ProtocolCryptographyC\ProtocolCryptographyC.csproj" />
   </ItemGroup>
 
 </Project>

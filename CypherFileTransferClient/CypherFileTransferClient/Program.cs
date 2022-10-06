@@ -37,7 +37,7 @@ namespace CypherFileTransferClient
 
             //enter authorizationString
             PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
-            string? authorizationString = Console.ReadLine();
+            string authorizationString = Console.ReadLine();
 
             //connect client
             IPEndPoint ipPoint = new IPEndPoint(ip, port);
@@ -63,13 +63,13 @@ namespace CypherFileTransferClient
                             PrintMessage.PrintSM("Error: empty file name !!!", ConsoleColor.Red, true);
                         }
                     } while ((fileName == null) || (fileName == ""));
-                    system_message = pccClient.SendFileInfo(fileName);
+                    system_message = pccClient.fileTransport.SendFileInfo(fileName);
                     if (system_message[0]=='F')
                     {
                         PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
                         break;
                     }
-                    system_message = pccClient.GetFile();
+                    system_message = pccClient.fileTransport.GetFile(null);
 
                     //print
                     if (system_message[0] == 'I')
@@ -87,7 +87,8 @@ namespace CypherFileTransferClient
                 } while ((system_message[0] == 'I') || (system_message[0] == 'W'));
 
                 //disconnect
-                PrintMessage.PrintSM(pccClient.Disconnect(), ConsoleColor.Yellow, true);
+                pccClient.Disconnect();
+                //PrintMessage.PrintSM(pccClient.Disconnect(), ConsoleColor.Yellow, true);
             }
             else
             {
