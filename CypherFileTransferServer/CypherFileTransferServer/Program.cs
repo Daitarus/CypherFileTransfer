@@ -1,7 +1,5 @@
-﻿using NLog;
-using ProtocolCryptographyC;
+﻿using ProtocolCryptographyC;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using CryptL;
 
@@ -11,7 +9,6 @@ namespace CypherFileTransferServer
     {
         static byte[] hashServer;
         static PccServer pccServer;
-        static Logger logger = LogManager.GetCurrentClassLogger();
 
         static void Main(string[] args)
         {
@@ -22,11 +19,11 @@ namespace CypherFileTransferServer
             //enter ip
             while (!errorEnter)
             {
-                PrintMessage.PrintSM("Please, enter your ip: ", ConsoleColor.White, false);
+                PrintMessage.PrintColorMessage("Please, enter your ip: ", ConsoleColor.White, false);
                 errorEnter = IPAddress.TryParse(Console.ReadLine(), out ip);
                 if (!errorEnter)
                 {
-                    PrintMessage.PrintSM("Error: Incorrect data !!!", ConsoleColor.Red, true);
+                    PrintMessage.PrintColorMessage("Error: Incorrect data !!!", ConsoleColor.Red, true);
                 }
             }
             errorEnter = false;
@@ -34,91 +31,49 @@ namespace CypherFileTransferServer
             //enter port
             while (!errorEnter)
             {
-                PrintMessage.PrintSM("Please, enter tcp port: ", ConsoleColor.White, false);
+                PrintMessage.PrintColorMessage("Please, enter tcp port: ", ConsoleColor.White, false);
                 errorEnter = int.TryParse(Console.ReadLine(), out port);
                 if (!errorEnter)
                 {
-                    PrintMessage.PrintSM("Error: Incorrect data !!!", ConsoleColor.Red, true);
+                    PrintMessage.PrintColorMessage("Error: Incorrect data !!!", ConsoleColor.Red, true);
                 }
             }
 
             //enter authorizationString
-            PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
+            PrintMessage.PrintColorMessage("Please, enter password for connect: ", ConsoleColor.White, false);
             hashServer = HashSHA256.GetHash(Encoding.UTF8.GetBytes(Console.ReadLine()));
 
 
             //start server
-            PrintMessage.PrintSM("Server Start...", ConsoleColor.Yellow, true);
+            PrintMessage.PrintColorMessage("Server Start...", ConsoleColor.Yellow, true);
 			IPEndPoint serverEndPoint = new IPEndPoint(ip, port);
             CryptRSA cryptRSA = new CryptRSA();
             pccServer = new PccServer(serverEndPoint, cryptRSA);
-			pccServer.Start(Authorization, Algorithm, PrintSystemMessage);
+			pccServer.Start(Authorization, MainServerAlgorithm, PrintMessage.PrintSystemMessage);
 		}
 
         private static bool Authorization(byte[] hash)
         {
-            if (Enumerable.SequenceEqual(hash, hashServer))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return Enumerable.SequenceEqual(hash, hashServer);
         }
 
-        private static void Algorithm(ClientInfo clientInfo)
+        private static void MainServerAlgorithm(ClientInfo clientInfo)
         {
-            string system_message, logString;
+            string fileInfo, additionalMessage = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port}";
+            PccSystemMessage systemMessage;
 
             do
             {
-                system_message = pccServer.fileTransport.GetFileInfo();
-                if (system_message[0]=='F')
+                systemMessage = pccServer.fileTransport.GetFileInfo(out fileInfo);
+                systemMessage.AdditionalMessage = additionalMessage;
+                PrintMessage.PrintSystemMessage(systemMessage);
+                if (systemMessage.Key == PccSystemMessageKey.INFO)
                 {
-                    logString = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port} - {system_message}";
-                    logger.Fatal(logString);
-                    break;
+                    systemMessage = pccServer.fileTransport.SendFile(fileInfo);
+                    systemMessage.AdditionalMessage = additionalMessage;
+                    PrintMessage.PrintSystemMessage(systemMessage);
                 }
-                system_message = pccServer.fileTransport.SendFile(system_message);
-                logString = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port} - {system_message}";
-                if (system_message[0]=='E')
-                {
-                    logger.Error(logString);
-                }
-                if(system_message[0]=='W')
-                {
-                    logger.Warn(logString);
-                }
-                if (system_message[0]=='F')
-                {
-                    logger.Fatal(logString);
-                }
-                if (system_message[0]=='I')
-                {
-                    logger.Info(logString);
-                }
-            } while ((system_message[0]=='W') || (system_message[0]=='I'));
-        }
-
-        private static void PrintSystemMessage(string SystemMessage)
-        {
-            if (SystemMessage[0] == 'E')
-            {
-                logger.Error(SystemMessage);
-            }
-            if (SystemMessage[0] == 'W')
-            {
-                logger.Warn(SystemMessage);
-            }
-            if (SystemMessage[0] == 'F')
-            {
-                logger.Fatal(SystemMessage);
-            }
-            if (SystemMessage[0] == 'I')
-            {
-                logger.Info(SystemMessage);
-            }
-        }
+            } while ((systemMessage.Key == PccSystemMessageKey.WARRNING) || (systemMessage.Key == PccSystemMessageKey.INFO));
+        }        
 	}
 }

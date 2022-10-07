@@ -14,11 +14,11 @@ namespace CypherFileTransferClient
             //enter ip
             while (!errorEnter)
             {
-                PrintMessage.PrintSM("Please, enter server's ip: ", ConsoleColor.White, false);
+                PrintMessage.PrintColorMessage("Please, enter server's ip: ", ConsoleColor.White, false);
                 errorEnter = IPAddress.TryParse(Console.ReadLine(), out ip);
                 if (!errorEnter)
                 {
-                    PrintMessage.PrintSM("Error: Incorrect data !!!", ConsoleColor.Red, true);
+                    PrintMessage.PrintColorMessage("Error: Incorrect data !!!", ConsoleColor.Red, true);
                 }
             }
             errorEnter = false;
@@ -26,29 +26,29 @@ namespace CypherFileTransferClient
             //enter port
             while (!errorEnter)
             {
-                PrintMessage.PrintSM("Please, enter tcp port: ", ConsoleColor.White, false);
+                PrintMessage.PrintColorMessage("Please, enter tcp port: ", ConsoleColor.White, false);
                 errorEnter = int.TryParse(Console.ReadLine(), out port);
                 if (!errorEnter)
                 {
-                    PrintMessage.PrintSM("Error: Incorrect data !!!", ConsoleColor.Red, true);
+                    PrintMessage.PrintColorMessage("Error: Incorrect data !!!", ConsoleColor.Red, true);
                 }
             }
             errorEnter = false;
 
             //enter authorizationString
-            PrintMessage.PrintSM("Please, enter password for connect: ", ConsoleColor.White, false);
+            PrintMessage.PrintColorMessage("Please, enter password for connect: ", ConsoleColor.White, false);
             string authorizationString = Console.ReadLine();
 
             //connect client
             IPEndPoint ipPoint = new IPEndPoint(ip, port);
             PccClient pccClient = new PccClient(ipPoint, authorizationString);
-            string system_message;
-            system_message = pccClient.Connect();
+            PccSystemMessage systemMessage;
+            systemMessage = pccClient.Connect();
 
             //get files
-            if (system_message[0] == 'I')
+            if (systemMessage.Key == PccSystemMessageKey.INFO)
             {
-                PrintMessage.PrintSM(system_message, ConsoleColor.Cyan, true);
+                PrintMessage.PrintColorMessage(systemMessage.Message, ConsoleColor.Cyan, true);
 
                 string? fileName;
                 do
@@ -56,43 +56,27 @@ namespace CypherFileTransferClient
                     //enter fileName
                     do
                     {
-                        PrintMessage.PrintSM("Please, enter file name: ", ConsoleColor.White, false);
+                        PrintMessage.PrintColorMessage("Please, enter file name: ", ConsoleColor.White, false);
                         fileName = Console.ReadLine();
                         if((fileName == null) || (fileName == ""))
                         {
-                            PrintMessage.PrintSM("Error: empty file name !!!", ConsoleColor.Red, true);
+                            PrintMessage.PrintColorMessage("Error: empty file name !!!", ConsoleColor.Red, true);
                         }
                     } while ((fileName == null) || (fileName == ""));
-                    system_message = pccClient.fileTransport.SendFileInfo(fileName);
-                    if (system_message[0]=='F')
-                    {
-                        PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
-                        break;
-                    }
-                    system_message = pccClient.fileTransport.GetFile(null);
+                    systemMessage = pccClient.fileTransport.SendFileInfo(fileName);
+                    PrintMessage.PrintSystemMessage(systemMessage);
 
-                    //print
-                    if (system_message[0] == 'I')
-                    {
-                        PrintMessage.PrintSM(system_message, ConsoleColor.White, true);
-                    }
-                    if (system_message[0] == 'W')
-                    {
-                        PrintMessage.PrintSM(system_message, ConsoleColor.Yellow, true);
-                    }
-                    if ((system_message[0] == 'E') || (system_message[0] == 'F')) 
-                    {
-                        PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
-                    }
-                } while ((system_message[0] == 'I') || (system_message[0] == 'W'));
+                    systemMessage = pccClient.fileTransport.GetFile(null);
+                    PrintMessage.PrintSystemMessage(systemMessage);
+
+                } while ((systemMessage.Key == PccSystemMessageKey.INFO) || (systemMessage.Key == PccSystemMessageKey.WARRNING));
 
                 //disconnect
-                pccClient.Disconnect();
-                //PrintMessage.PrintSM(pccClient.Disconnect(), ConsoleColor.Yellow, true);
+                PrintMessage.PrintColorMessage(pccClient.Disconnect().Message, ConsoleColor.Yellow, true);
             }
             else
             {
-                PrintMessage.PrintSM(system_message, ConsoleColor.Red, true);
+                PrintMessage.PrintColorMessage(systemMessage.Message, ConsoleColor.Red, true);
             }
             Console.ReadLine();
         }

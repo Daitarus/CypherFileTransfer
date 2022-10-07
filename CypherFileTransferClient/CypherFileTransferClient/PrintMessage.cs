@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ProtocolCryptographyC;
 
 namespace CypherFileTransferClient
 {
     internal static class PrintMessage
     {
-        public static void PrintSM(string message, ConsoleColor consoleColor, bool ifNewLine)
+        public static void PrintColorMessage(string message, ConsoleColor consoleColor, bool ifNewLine)
         {
             Console.ForegroundColor = consoleColor;
             if (ifNewLine)
@@ -21,17 +17,45 @@ namespace CypherFileTransferClient
             }
             Console.ResetColor();
         }
-        //public static string WriteXML(DataMess dataMess)
-        //{
-        //    XmlSerializer xmlSerializer = new XmlSerializer(typeof(DataMess));
-        //    using (var sww = new StringWriter())
-        //    {
-        //        using (XmlTextWriter writer = new XmlTextWriter(sww) { Formatting = Formatting.Indented })
-        //        {
-        //            xmlSerializer.Serialize(writer, dataMess);
-        //            return sww.ToString();
-        //        }
-        //    }
-        //}
+
+        public static void PrintSystemMessage(PccSystemMessage systemMessage)
+        {
+            string systemMessageStr;
+            if (systemMessage.AdditionalMessage != null)
+            {
+                systemMessageStr = systemMessage.AdditionalMessage;
+                systemMessageStr += $" - {systemMessage.Message}";
+            }
+            else
+            {
+                systemMessageStr = systemMessage.Message;
+            }
+
+            switch (systemMessage.Key)
+            {
+                case PccSystemMessageKey.ERROR:
+                    {
+                        PrintColorMessage(systemMessageStr,ConsoleColor.Red,true);
+                        break;
+                    }
+                case PccSystemMessageKey.INFO:
+                    {
+                        PrintColorMessage(systemMessageStr, ConsoleColor.White, true);
+                        break;
+                    }
+                case PccSystemMessageKey.WARRNING:
+                    {
+                        PrintColorMessage(systemMessageStr, ConsoleColor.Yellow, true);
+                        break;
+                    }
+                case PccSystemMessageKey.FATAL_ERROR:
+                    {
+                        PrintColorMessage(systemMessageStr, ConsoleColor.Red, true); ;
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
     }
 }
