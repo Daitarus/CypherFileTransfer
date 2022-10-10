@@ -57,20 +57,20 @@ namespace CypherFileTransferServer
             return Enumerable.SequenceEqual(hash, hashServer);
         }
 
-        private static void MainServerAlgorithm(ClientInfo clientInfo)
+        private static void MainServerAlgorithm(MessageTransport messageTransport, FileTransport fileTransport, ClientInfo clientInfo)
         {
             string fileInfo, additionalMessage = $"{clientInfo.ClientEndPoint.Address}:{clientInfo.ClientEndPoint.Port}";
             PccSystemMessage systemMessage;
 
             do
             {
-                systemMessage = pccServer.fileTransport.GetFileInfo(out fileInfo);
-                systemMessage.AdditionalMessage = additionalMessage;
+                systemMessage = fileTransport.GetFileInfo(out fileInfo);
+                systemMessage.AddAdditionalMessage(additionalMessage);
                 PrintMessage.PrintSystemMessage(systemMessage);
                 if (systemMessage.Key == PccSystemMessageKey.INFO)
                 {
-                    systemMessage = pccServer.fileTransport.SendFile(fileInfo);
-                    systemMessage.AdditionalMessage = additionalMessage;
+                    systemMessage = fileTransport.SendFile(fileInfo);
+                    systemMessage.AddAdditionalMessage(additionalMessage);
                     PrintMessage.PrintSystemMessage(systemMessage);
                 }
             } while ((systemMessage.Key == PccSystemMessageKey.WARRNING) || (systemMessage.Key == PccSystemMessageKey.INFO));

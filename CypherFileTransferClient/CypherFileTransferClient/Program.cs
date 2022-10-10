@@ -50,9 +50,19 @@ namespace CypherFileTransferClient
             {
                 PrintMessage.PrintColorMessage(systemMessage.Message, ConsoleColor.Cyan, true);
 
-                string? fileName;
+                string fileName;
+                string path;
+
                 do
                 {
+                    //enter local path
+                    PrintMessage.PrintColorMessage("Please, enter local path: ", ConsoleColor.White, false);
+                    path = Console.ReadLine();
+                    if (path != null && path[path.Length - 1] != '\\') 
+                    {
+                        path += '\\';
+                    }
+
                     //enter fileName
                     do
                     {
@@ -66,7 +76,7 @@ namespace CypherFileTransferClient
                     systemMessage = pccClient.fileTransport.SendFileInfo(fileName);
                     PrintMessage.PrintSystemMessage(systemMessage);
 
-                    systemMessage = pccClient.fileTransport.GetFile(null);
+                    systemMessage = pccClient.fileTransport.GetFile(path);
                     PrintMessage.PrintSystemMessage(systemMessage);
 
                 } while ((systemMessage.Key == PccSystemMessageKey.INFO) || (systemMessage.Key == PccSystemMessageKey.WARRNING));
