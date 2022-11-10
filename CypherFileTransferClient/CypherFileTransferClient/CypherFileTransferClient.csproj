@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ProtocolCryptographyC\ProtocolCryptographyC\ProtocolCryptographyC.csproj" />
+    <ProjectReference Include="..\..\ProtocolCryptographyC\ProtocolCryptographyC.csproj" />
   </ItemGroup>
 
 </Project>

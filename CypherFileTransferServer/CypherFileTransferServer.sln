@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CypherFileTransferServer", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CypherFileTransferClient", "..\CypherFileTransferClient\CypherFileTransferClient\CypherFileTransferClient.csproj", "{5FE23931-EE2F-4614-88AF-1AD610B620F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolCryptographyC", "..\..\ProtocolCryptographyC\ProtocolCryptographyC\ProtocolCryptographyC.csproj", "{6F87BA8F-4FA6-487A-A79B-57483C967F21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolCryptographyC", "..\ProtocolCryptographyC\ProtocolCryptographyC.csproj", "{B7F7884C-5F12-479E-AE96-9062D65044BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptL", "..\..\..\Cryptography\CryptL\CryptL\CryptL.csproj", "{4D3F7E0A-C536-4D13-8AB5-49520C1909E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptL", "..\CryptL\CryptL.csproj", "{492DBE4C-6ABD-45F0-AAE2-8FD5A9DCD37C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,14 @@ Global
 		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FE23931-EE2F-4614-88AF-1AD610B620F7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F87BA8F-4FA6-487A-A79B-57483C967F21}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4D3F7E0A-C536-4D13-8AB5-49520C1909E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4D3F7E0A-C536-4D13-8AB5-49520C1909E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4D3F7E0A-C536-4D13-8AB5-49520C1909E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4D3F7E0A-C536-4D13-8AB5-49520C1909E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7F7884C-5F12-479E-AE96-9062D65044BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7F7884C-5F12-479E-AE96-9062D65044BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7F7884C-5F12-479E-AE96-9062D65044BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7F7884C-5F12-479E-AE96-9062D65044BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{492DBE4C-6ABD-45F0-AAE2-8FD5A9DCD37C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{492DBE4C-6ABD-45F0-AAE2-8FD5A9DCD37C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{492DBE4C-6ABD-45F0-AAE2-8FD5A9DCD37C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{492DBE4C-6ABD-45F0-AAE2-8FD5A9DCD37C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
